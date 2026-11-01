@@ -1,4 +1,4 @@
-/* 1. Переменные для светлой темы (по умолчанию) */
+/* 1. Переменные темы (Светлая по умолчанию / Тёмная авто) */
 :root {
   --bg-color: #ffffff;
   --text-color: #212529;
@@ -9,7 +9,6 @@
   --btn-text: #212529;
 }
 
-/* 2. Авто-переключение на тёмную тему по настройкам браузера/ОС */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #121212;
@@ -22,21 +21,51 @@
   }
 }
 
-/* 3. Применяем тему к фону страницы */
+/* 2. Базовые стили страницы */
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
   margin: 0;
+  font-family: Arial, sans-serif;
   transition: background-color 0.2s, color 0.2s;
 }
 
+a {
+  color: #007bff;
+}
+
+@media (prefers-color-scheme: dark) {
+  a {
+    color: #6ea8fe;
+  }
+}
+
+/* 3. Макет и сетка */
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  font-family: Arial, sans-serif;
   padding: 20px;
 }
 
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .forms-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 4. Карточки и контейнеры */
 .card {
   background: var(--card-bg);
   padding: 15px;
@@ -45,23 +74,22 @@ body {
   border: 1px solid var(--border-color);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.modal-box {
+  background: var(--card-bg);
+  padding: 15px;
+  margin-top: 15px;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
 }
 
-/* Применяем цвет рамок таблицы под тему */
-table, th, td {
-  border-color: var(--border-color);
-}
-
-input {
-  margin: 5px;
+/* 5. Элементы ввода, селекты и кнопки */
+input, select {
   padding: 8px;
   background-color: var(--input-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 button {
@@ -73,7 +101,18 @@ button {
   border-radius: 4px;
 }
 
-/* Выстраивает поля друг под другом с ровным отступом */
+/* 6. Таблицы */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table, th, td {
+  border-color: var(--border-color);
+}
+
+/* 7. Стили форм */
+/* Форма входа */
 .login-form {
   max-width: 250px;
   margin: 0 auto;
@@ -91,5 +130,88 @@ button {
 
 .login-form input {
   padding: 6px;
-  box-sizing: border-box; /* Поле не вылезает за границы */
+}
+
+/* Вертикальная форма создания (Студенты) */
+.aligned-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.aligned-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.aligned-form label {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.aligned-form input {
+  width: 100%;
+  margin: 0;
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px;
+}
+
+/* Горизонтальная форма в одну строку (Группы) */
+.inline-form {
+  display: flex;
+  gap: 8px;
+}
+
+.inline-form input {
+  flex: 1;
+}
+
+/* 8. Карточки групп и списки студентов внутри них */
+.groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group-card {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  background-color: var(--card-bg);
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.group-header h4 {
+  margin: 0;
+}
+
+.group-students {
+  text-align: left;
+  font-size: 14px;
+}
+
+.group-students ul {
+  margin: 6px 0 0 0;
+  padding-left: 20px;
+}
+
+.empty-text {
+  font-style: italic;
+  color: #888;
+  margin: 4px 0 0 0;
 }

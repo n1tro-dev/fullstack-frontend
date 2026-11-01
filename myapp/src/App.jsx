@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginForm from './components/LoginForm';
-import StudentList from './components/StudentList';
 import StudentForm from './components/StudentForm';
+import StudentList from './components/StudentList';
+import GroupForm from './components/GroupForm';
 import GroupList from './components/GroupList';
 import './App.css';
 
@@ -41,15 +42,19 @@ function MainContent() {
 
   return (
     <div className="container">
-      <header>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>Панель управления Университетом</h2>
         <button onClick={logout}>Выйти</button>
       </header>
 
       <main>
-        <StudentForm onStudentAdded={fetchData} />
-        <StudentList students={students} onRefresh={fetchData} />
-        <GroupList groups={groups} />
+        <div className="forms-grid">
+          <StudentForm onStudentAdded={fetchData} />
+          <GroupForm onGroupAdded={fetchData} />
+        </div>
+
+        <StudentList students={students} groups={groups} onRefresh={fetchData} />
+        <GroupList groups={groups} onRefresh={fetchData} />
       </main>
     </div>
   );
