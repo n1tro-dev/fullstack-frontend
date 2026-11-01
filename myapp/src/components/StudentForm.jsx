@@ -16,14 +16,14 @@ function StudentForm({ onStudentAdded }) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(student),
     });
 
     if (response.ok) {
       setStudent({ name: '', email: '' });
-      onStudentAdded(); // Обновляем список студентов в родителе
+      onStudentAdded();
     } else {
       alert('Ошибка добавления студента');
     }
@@ -32,24 +32,36 @@ function StudentForm({ onStudentAdded }) {
   return (
     <div className="card">
       <h3>Добавить нового студента</h3>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="ФИО студента"
-          value={student.name}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={student.email}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Сохранить</button>
+      <form onSubmit={handleSubmit} className="aligned-form">
+        <div className="form-group">
+          <label htmlFor="student-name">ФИО студента:</label>
+          <input
+            id="student-name"
+            type="text"
+            name="name"
+            placeholder="Иван Иванов"
+            value={student.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="student-email">Email:</label>
+          <input
+            id="student-email"
+            type="email"
+            name="email"
+            placeholder="ivan@example.com"
+            value={student.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button type="submit" className="submit-btn">
+          Сохранить
+        </button>
       </form>
     </div>
   );
