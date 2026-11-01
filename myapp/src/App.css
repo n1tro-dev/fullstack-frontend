@@ -1,0 +1,95 @@
+/* 1. Переменные для светлой темы (по умолчанию) */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #212529;
+  --card-bg: #f9f9f9;
+  --border-color: #ddd;
+  --input-bg: #ffffff;
+  --btn-bg: #f0f0f0;
+  --btn-text: #212529;
+}
+
+/* 2. Авто-переключение на тёмную тему по настройкам браузера/ОС */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --border-color: #333;
+    --input-bg: #2d2d2d;
+    --btn-bg: #333333;
+    --btn-text: #ffffff;
+  }
+}
+
+/* 3. Применяем тему к фону страницы */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Применяем цвет рамок таблицы под тему */
+table, th, td {
+  border-color: var(--border-color);
+}
+
+input {
+  margin: 5px;
+  padding: 8px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+button {
+  padding: 8px 12px;
+  cursor: pointer;
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+/* Выстраивает поля друг под другом с ровным отступом */
+.login-form {
+  max-width: 250px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.login-form div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login-form input {
+  padding: 6px;
+  box-sizing: border-box; /* Поле не вылезает за границы */
+}
