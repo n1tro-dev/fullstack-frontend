@@ -1,46 +1,72 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../api';
 import ProfileForm from './ProfileForm';
 
-function StudentList({ students, groups, onRefresh }) {
-  const { token } = useAuth();
+function StudentList() {
+  const queryClient = useQueryClient();
   const [selectedGroups, setSelectedGroups] = useState({});
   const [activeStudentForProfile, setActiveStudentForProfile] = useState(null);
 
-  const handleDelete = async (id) => {
-    if (!confirm('Удалить студента?')) return;
+  // 1. useQuery (Глава 10): получение списка студентов
+  const {
+    data: students = [],
+    isLoading: isLoadingStudents,
+    isError: isErrorStudents,
+  } = useQuery({
+    queryKey: ['students'],
+    queryFn: async () => {
+      const res = await api.get('/api/students');
+      return res.data;
+    },
+  });
 
-    const response = await fetch(`http://localhost:8080/api/students/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  // Получение списка групп для drop-down
+  const { data: groups = [] } = useQuery({
+    queryKey: ['groups'],
+    queryFn: async () => {
+      const res = await api.get('/api/groups');
+      return res.data;
+    },
+  });
 
-    if (response.ok) {
-      onRefresh();
+  // 2. useMutation: удаление студента
+  const deleteMutation = useMutation({
+    mutationFn: (id) => api.delete(`/api/students/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+  });
+
+  // 3. useMutation: привязка студента к группе
+  const assignGroupMutation = useMutation({
+    mutationFn: ({ studentId, groupId }) =>
+      api.put(`/api/students/${studentId}/group/${groupId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+    onError: () => alert('Ошибка при привязке к группе'),
+  });
+
+  const handleDelete = (id) => {
+    if (confirm('Удалить студента?')) {
+      deleteMutation.mutate(id);
     }
   };
 
-  const handleAssignGroup = async (studentId) => {
+  const handleAssignGroup = (studentId) => {
     const groupId = selectedGroups[studentId];
     if (!groupId) {
       alert('Выберите группу из списка!');
       return;
     }
-
-    const response = await fetch(
-      `http://localhost:8080/api/students/${studentId}/group/${groupId}`,
-      {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    if (response.ok) {
-      onRefresh();
-    } else {
-      alert('Ошибка при привязке к группе');
-    }
+    assignGroupMutation.mutate({ studentId, groupId });
   };
+
+  if (isLoadingStudents) return <div className="card"><p>Загрузка студентов...</p></div>;
+  if (isErrorStudents) return <div className="card"><p>Ошибка при загрузке студентов</p></div>;
 
   return (
     <div className="card">
@@ -114,10 +140,6 @@ function StudentList({ students, groups, onRefresh }) {
       {activeStudentForProfile && (
         <ProfileForm
           student={activeStudentForProfile}
-          onProfileCreated={() => {
-            setActiveStudentForProfile(null);
-            onRefresh();
-          }}
           onCancel={() => setActiveStudentForProfile(null)}
         />
       )}

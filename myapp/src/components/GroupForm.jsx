@@ -1,28 +1,25 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../api';
 
-function GroupForm({ onGroupAdded }) {
+function GroupForm() {
   const [name, setName] = useState('');
-  const { token } = useAuth();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const response = await fetch('http://localhost:8080/api/groups', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name }),
-    });
-
-    if (response.ok) {
+  const mutation = useMutation({
+    mutationFn: (newGroup) => api.post('/api/groups', newGroup),
+    onSuccess: () => {
       setName('');
-      onGroupAdded();
-    } else {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+    onError: () => {
       alert('Ошибка при создании группы');
-    }
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutation.mutate({ name });
   };
 
   return (
@@ -36,7 +33,9 @@ function GroupForm({ onGroupAdded }) {
           onChange={(e) => setName(e.target.value)}
           required
         />
-        <button type="submit">Создать</button>
+        <button type="submit" disabled={mutation.isLoading}>
+          {mutation.isLoading ? '...' : 'Создать'}
+        </button>
       </form>
     </div>
   );

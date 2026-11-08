@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api';
 
 function LoginForm() {
   const [creds, setCreds] = useState({ username: '', password: '' });
@@ -15,23 +16,20 @@ function LoginForm() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(creds),
-      });
+      // Запрос через Axios POST (Глава 10)
+      const response = await api.post('/login', creds);
 
-      if (response.ok) {
-        const authHeader = response.headers.get('Authorization');
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-          const token = authHeader.replace('Bearer ', '');
-          login(token);
-        }
-      } else {
-        setError('Неверный логин или пароль');
+      const authHeader = response.headers['authorization'];
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '');
+        login(token);
       }
-    } catch {
-      setError('Ошибка соединения с сервером');
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        setError('Неверный логин или пароль');
+      } else {
+        setError('Ошибка соединения с сервером');
+      }
     }
   };
 

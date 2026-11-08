@@ -1,22 +1,38 @@
-import { useAuth } from '../context/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../api';
 
-function GroupList({ groups, onRefresh }) {
-  const { token } = useAuth();
+function GroupList() {
+  const queryClient = useQueryClient();
 
-  const handleDelete = async (id) => {
-    if (!confirm('Удалить группу?')) return;
+  const {
+    data: groups = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['groups'],
+    queryFn: async () => {
+      const res = await api.get('/api/groups');
+      return res.data;
+    },
+  });
 
-    const response = await fetch(`http://localhost:8080/api/groups/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const deleteMutation = useMutation({
+    mutationFn: (id) => api.delete(`/api/groups/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+    onError: () => alert('Ошибка при удалении группы'),
+  });
 
-    if (response.ok) {
-      onRefresh();
-    } else {
-      alert('Ошибка при удалении группы');
+  const handleDelete = (id) => {
+    if (confirm('Удалить группу?')) {
+      deleteMutation.mutate(id);
     }
   };
+
+  if (isLoading) return <div className="card"><p>Загрузка групп...</p></div>;
+  if (isError) return <div className="card"><p>Ошибка при загрузке групп</p></div>;
 
   return (
     <div className="card">

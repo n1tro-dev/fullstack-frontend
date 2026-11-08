@@ -1,32 +1,31 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../api';
 
-function StudentForm({ onStudentAdded }) {
+function StudentForm() {
   const [student, setStudent] = useState({ name: '', email: '' });
-  const { token } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Использование useMutation (Глава 10)
+  const mutation = useMutation({
+    mutationFn: (newStudent) => api.post('/api/students', newStudent),
+    onSuccess: () => {
+      setStudent({ name: '', email: '' });
+      // Инвалидация кэша: список студентов заново запрашивается с сервера
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+    onError: () => {
+      alert('Ошибка добавления студента');
+    },
+  });
 
   const handleChange = (e) => {
     setStudent({ ...student, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const response = await fetch('http://localhost:8080/api/students', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(student),
-    });
-
-    if (response.ok) {
-      setStudent({ name: '', email: '' });
-      onStudentAdded();
-    } else {
-      alert('Ошибка добавления студента');
-    }
+    mutation.mutate(student);
   };
 
   return (
@@ -59,8 +58,8 @@ function StudentForm({ onStudentAdded }) {
           />
         </div>
 
-        <button type="submit" className="submit-btn">
-          Сохранить
+        <button type="submit" className="submit-btn" disabled={mutation.isLoading}>
+          {mutation.isLoading ? 'Сохранение...' : 'Сохранить'}
         </button>
       </form>
     </div>
