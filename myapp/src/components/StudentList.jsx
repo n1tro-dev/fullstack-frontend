@@ -8,7 +8,6 @@ function StudentList() {
   const [selectedGroups, setSelectedGroups] = useState({});
   const [activeStudentForProfile, setActiveStudentForProfile] = useState(null);
 
-  // 1. useQuery (Глава 10): получение списка студентов
   const {
     data: students = [],
     isLoading: isLoadingStudents,
@@ -21,7 +20,6 @@ function StudentList() {
     },
   });
 
-  // Получение списка групп для drop-down
   const { data: groups = [] } = useQuery({
     queryKey: ['groups'],
     queryFn: async () => {
@@ -30,7 +28,6 @@ function StudentList() {
     },
   });
 
-  // 2. useMutation: удаление студента
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/api/students/${id}`),
     onSuccess: () => {
@@ -39,7 +36,6 @@ function StudentList() {
     },
   });
 
-  // 3. useMutation: привязка студента к группе
   const assignGroupMutation = useMutation({
     mutationFn: ({ studentId, groupId }) =>
       api.put(`/api/students/${studentId}/group/${groupId}`),

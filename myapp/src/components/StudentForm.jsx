@@ -6,12 +6,10 @@ function StudentForm() {
   const [student, setStudent] = useState({ name: '', email: '' });
   const queryClient = useQueryClient();
 
-  // Использование useMutation (Глава 10)
   const mutation = useMutation({
     mutationFn: (newStudent) => api.post('/api/students', newStudent),
     onSuccess: () => {
       setStudent({ name: '', email: '' });
-      // Инвалидация кэша: список студентов заново запрашивается с сервера
       queryClient.invalidateQueries({ queryKey: ['students'] });
     },
     onError: () => {
@@ -58,8 +56,8 @@ function StudentForm() {
           />
         </div>
 
-        <button type="submit" className="submit-btn" disabled={mutation.isLoading}>
-          {mutation.isLoading ? 'Сохранение...' : 'Сохранить'}
+        <button type="submit" className="submit-btn" disabled={mutation.isPending}>
+          {mutation.isPending ? 'Сохранение...' : 'Сохранить'}
         </button>
       </form>
     </div>

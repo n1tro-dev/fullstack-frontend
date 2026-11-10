@@ -16,7 +16,6 @@ function LoginForm() {
     setError('');
 
     try {
-      // Запрос через Axios POST (Глава 10)
       const response = await api.post('/login', creds);
 
       const authHeader = response.headers['authorization'];

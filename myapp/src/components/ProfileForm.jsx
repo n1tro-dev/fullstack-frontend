@@ -47,8 +47,8 @@ function ProfileForm({ student, onCancel }) {
           />
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button type="submit" disabled={mutation.isLoading}>
-            {mutation.isLoading ? 'Сохранение...' : 'Сохранить'}
+          <button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Сохранение...' : 'Сохранить'}
           </button>
           <button type="button" onClick={onCancel}>Отмена</button>
         </div>

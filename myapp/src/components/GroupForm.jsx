@@ -33,8 +33,8 @@ function GroupForm() {
           onChange={(e) => setName(e.target.value)}
           required
         />
-        <button type="submit" disabled={mutation.isLoading}>
-          {mutation.isLoading ? '...' : 'Создать'}
+        <button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending ? '...' : 'Создать'}
         </button>
       </form>
     </div>

@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
 import App from './App.jsx';
 
-// Инициализация клиента React Query (Глава 10)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
