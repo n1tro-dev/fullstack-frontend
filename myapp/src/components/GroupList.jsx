@@ -1,14 +1,15 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { DataGrid } from '@mui/x-data-grid';
+import { Snackbar, Button } from '@mui/material';
 import api from '../api';
+import GroupForm from './GroupForm';
 
 function GroupList() {
   const queryClient = useQueryClient();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const {
-    data: groups = [],
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: groups = [], isLoading, isError } = useQuery({
     queryKey: ['groups'],
     queryFn: async () => {
       const res = await api.get('/api/groups');
@@ -19,53 +20,62 @@ function GroupList() {
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/api/groups/${id}`),
     onSuccess: () => {
+      setOpenSnackbar(true);
       queryClient.invalidateQueries({ queryKey: ['groups'] });
+      // Инвалидируем студентов, так как у них могла сброситься группа
       queryClient.invalidateQueries({ queryKey: ['students'] });
     },
-    onError: () => alert('Ошибка при удалении группы'),
   });
 
-  const handleDelete = (id) => {
-    if (confirm('Удалить группу?')) {
-      deleteMutation.mutate(id);
-    }
-  };
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'name', headerName: 'Название группы', width: 300 },
+    {
+      field: 'actions',
+      headerName: 'Действия',
+      width: 150,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Button 
+          color="error" 
+          onClick={() => {
+            if (window.confirm(`Удалить группу ${params.row.name}?`)) {
+              deleteMutation.mutate(params.row.id);
+            }
+          }}
+        >
+          Удалить
+        </Button>
+      ),
+    },
+  ];
 
-  if (isLoading) return <div className="card"><p>Загрузка групп...</p></div>;
-  if (isError) return <div className="card"><p>Ошибка при загрузке групп</p></div>;
+  if (isLoading) return <div>Загрузка...</div>;
+  if (isError) return <div>Ошибка загрузки данных</div>;
 
   return (
-    <div className="card">
-      <h3>Учебные группы</h3>
-      {groups.length === 0 ? (
-        <p>Группы не найдены</p>
-      ) : (
-        <div className="groups-list">
-          {groups.map((group) => (
-            <div key={group.id} className="group-card">
-              <div className="group-header">
-                <h4>{group.name} (ID: {group.id})</h4>
-                <button onClick={() => handleDelete(group.id)}>Удалить группу</button>
-              </div>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <h2>Список групп</h2>
+        <GroupForm />
+      </div>
 
-              <div className="group-students">
-                <strong>Студенты в группе ({group.students?.length || 0}):</strong>
-                {group.students && group.students.length > 0 ? (
-                  <ul>
-                    {group.students.map((st) => (
-                      <li key={st.id}>
-                        {st.name} — <small>{st.email}</small>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="empty-text">В этой группе пока нет студентов</p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={{ height: 400, width: '100%', backgroundColor: '#fff' }}>
+        <DataGrid
+          rows={groups}
+          columns={columns}
+          getRowId={(row) => row.id}
+          disableRowSelectionOnClick
+        />
+      </div>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        message="Группа успешно удалена"
+      />
     </div>
   );
 }

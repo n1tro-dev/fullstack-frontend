@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
+import { Container, Paper, Typography, TextField, Button, Box, Alert } from '@mui/material';
 
 function LoginForm() {
   const [creds, setCreds] = useState({ username: '', password: '' });
@@ -33,35 +34,60 @@ function LoginForm() {
   };
 
   return (
-    <div className="card">
-      <h2>Авторизация в системе</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit} className="login-form">
-        <div>
-          <label>Логин:</label>
-          <input
-            type="text"
+    <Container component="main" maxWidth="xs">
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: 4, 
+          mt: 8, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center' 
+        }}
+      >
+        <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
+          Авторизация в системе
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Логин"
             name="username"
+            autoFocus
             value={creds.username}
             onChange={handleChange}
-            required
           />
-        </div>
-
-        <div>
-          <label>Пароль:</label>
-          <input
-            type="password"
+          <TextField
+            margin="normal"
+            required
+            fullWidth
             name="password"
+            label="Пароль"
+            type="password"
             value={creds.password}
             onChange={handleChange}
-            required
           />
-        </div>
-
-        <button type="submit">Войти</button>
-      </form>
-    </div>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            size="large"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Войти
+          </Button>
+        </Box>
+      </Paper>
+    </Container>
   );
 }
 

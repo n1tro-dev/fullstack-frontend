@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import api from '../api';
 
 function StudentForm() {
+  const [open, setOpen] = useState(false);
   const [student, setStudent] = useState({ name: '', email: '' });
   const queryClient = useQueryClient();
 
@@ -11,9 +13,7 @@ function StudentForm() {
     onSuccess: () => {
       setStudent({ name: '', email: '' });
       queryClient.invalidateQueries({ queryKey: ['students'] });
-    },
-    onError: () => {
-      alert('Ошибка добавления студента');
+      setOpen(false);
     },
   });
 
@@ -21,46 +21,46 @@ function StudentForm() {
     setStudent({ ...student, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    mutation.mutate(student);
-  };
-
   return (
-    <div className="card">
-      <h3>Добавить нового студента</h3>
-      <form onSubmit={handleSubmit} className="aligned-form">
-        <div className="form-group">
-          <label htmlFor="student-name">ФИО студента:</label>
-          <input
-            id="student-name"
-            type="text"
+    <>
+      <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
+        Новый студент
+      </Button>
+
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>Добавить нового студента</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
             name="name"
-            placeholder="Иван Иванов"
+            label="ФИО студента"
+            type="text"
+            fullWidth
+            variant="outlined"
             value={student.name}
             onChange={handleChange}
-            required
+            sx={{ mb: 2, mt: 1 }}
           />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="student-email">Email:</label>
-          <input
-            id="student-email"
-            type="email"
+          <TextField
+            margin="dense"
             name="email"
-            placeholder="ivan@example.com"
+            label="Email"
+            type="email"
+            fullWidth
+            variant="outlined"
             value={student.email}
             onChange={handleChange}
-            required
           />
-        </div>
-
-        <button type="submit" className="submit-btn" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Сохранение...' : 'Сохранить'}
-        </button>
-      </form>
-    </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Отмена</Button>
+          <Button onClick={() => mutation.mutate(student)} variant="contained" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Сохранение...' : 'Сохранить'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 

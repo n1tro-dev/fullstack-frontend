@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AppBar, Toolbar, Typography, Container, Button, CssBaseline, useMediaQuery } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import LoginForm from './components/LoginForm';
-import StudentForm from './components/StudentForm';
 import StudentList from './components/StudentList';
-import GroupForm from './components/GroupForm';
 import GroupList from './components/GroupList';
 import './App.css';
 
@@ -10,33 +12,59 @@ function MainContent() {
   const { token, logout } = useAuth();
 
   if (!token) {
-    return <LoginForm />;
+    return (
+      <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <LoginForm />
+      </Container>
+    );
   }
 
   return (
-    <div className="container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Панель управления Университетом</h2>
-        <button onClick={logout}>Выйти</button>
-      </header>
+    <BrowserRouter>
+      <AppBar position="static" sx={{ mb: 4 }}>
+        {/* Заголовок вынесен из Toolbar для отображения на отдельной строке */}
+        <Typography variant="h6" sx={{ flexGrow: 1, pt: 2, px: 3 }}>
+          Университет
+        </Typography>
+        <Toolbar>
+          <Button color="inherit" component={Link} to="/">Студенты</Button>
+          <Button color="inherit" component={Link} to="/groups">Группы</Button>
+          
+          <Button color="inherit" onClick={logout}>Выйти</Button>
+        </Toolbar>
+      </AppBar>
 
-      <main>
-        <div className="forms-grid">
-          <StudentForm />
-          <GroupForm />
-        </div>
-
-        <StudentList />
-        <GroupList />
-      </main>
-    </div>
+      <Container maxWidth="xl">
+        <Routes>
+          <Route path="/" element={<StudentList />} />
+          <Route path="/groups" element={<GroupList />} />
+        </Routes>
+      </Container>
+    </BrowserRouter>
   );
 }
 
 export default function App() {
+  // Читаем системные настройки (темная или светлая тема)
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  // Создаем объект темы, который пересчитывается при изменении настроек браузера/ОС
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: prefersDarkMode ? 'dark' : 'light',
+        },
+      }),
+    [prefersDarkMode]
+  );
+
   return (
-    <AuthProvider>
-      <MainContent />
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <MainContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

@@ -1,18 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { DataGrid } from '@mui/x-data-grid';
+import { Snackbar, Button, Select, MenuItem } from '@mui/material';
 import api from '../api';
 import ProfileForm from './ProfileForm';
+import StudentForm from './StudentForm'; // Теперь это модальное окно
 
 function StudentList() {
   const queryClient = useQueryClient();
-  const [selectedGroups, setSelectedGroups] = useState({});
   const [activeStudentForProfile, setActiveStudentForProfile] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const {
-    data: students = [],
-    isLoading: isLoadingStudents,
-    isError: isErrorStudents,
-  } = useQuery({
+  const { data: students = [], isLoading, isError } = useQuery({
     queryKey: ['students'],
     queryFn: async () => {
       const res = await api.get('/api/students');
@@ -31,6 +30,7 @@ function StudentList() {
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/api/students/${id}`),
     onSuccess: () => {
+      setOpenSnackbar(true);
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['groups'] });
     },
@@ -41,97 +41,98 @@ function StudentList() {
       api.put(`/api/students/${studentId}/group/${groupId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
     },
-    onError: () => alert('Ошибка при привязке к группе'),
   });
 
-  const handleDelete = (id) => {
-    if (confirm('Удалить студента?')) {
-      deleteMutation.mutate(id);
-    }
-  };
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'name', headerName: 'ФИО', width: 200 },
+    { field: 'email', headerName: 'Email', width: 200 },
+    {
+      field: 'group',
+      headerName: 'Группа',
+      width: 200,
+      renderCell: (params) => {
+        const student = params.row;
+        if (student.group) return <strong>{student.group.name}</strong>;
+        
+        return (
+          <Select
+            size="small"
+            displayEmpty
+            value=""
+            onChange={(e) => assignGroupMutation.mutate({ studentId: student.id, groupId: e.target.value })}
+          >
+            <MenuItem value="" disabled>-- Выбрать --</MenuItem>
+            {groups.map((g) => (
+              <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
+            ))}
+          </Select>
+        );
+      },
+    },
+    {
+      field: 'profile',
+      headerName: 'Профиль',
+      width: 250,
+      renderCell: (params) => {
+        const student = params.row;
+        if (student.profile) {
+          return (
+            <span style={{ fontSize: '0.85rem' }}>
+              {student.profile.bio} (<a href={student.profile.githubUrl} target="_blank" rel="noreferrer">GitHub</a>)
+            </span>
+          );
+        }
+        return <Button size="small" onClick={() => setActiveStudentForProfile(student)}>+ Профиль</Button>;
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'Действия',
+      width: 150,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Button 
+          color="error" 
+          onClick={() => {
+            if (window.confirm(`Удалить студента ${params.row.name}?`)) {
+              deleteMutation.mutate(params.row.id);
+            }
+          }}
+        >
+          Удалить
+        </Button>
+      ),
+    },
+  ];
 
-  const handleAssignGroup = (studentId) => {
-    const groupId = selectedGroups[studentId];
-    if (!groupId) {
-      alert('Выберите группу из списка!');
-      return;
-    }
-    assignGroupMutation.mutate({ studentId, groupId });
-  };
-
-  if (isLoadingStudents) return <div className="card"><p>Загрузка студентов...</p></div>;
-  if (isErrorStudents) return <div className="card"><p>Ошибка при загрузке студентов</p></div>;
+  if (isLoading) return <div>Загрузка...</div>;
+  if (isError) return <div>Ошибка загрузки данных</div>;
 
   return (
-    <div className="card">
-      <h3>Список студентов</h3>
-      {students.length === 0 ? (
-        <p>Студенты не найдены</p>
-      ) : (
-        <table border="1" cellPadding="8">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>ФИО</th>
-              <th>Email</th>
-              <th>Группа</th>
-              <th>Профиль</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.id}>
-                <td>{student.id}</td>
-                <td>{student.name}</td>
-                <td>{student.email}</td>
-                <td>
-                  {student.group ? (
-                    <strong>{student.group.name}</strong>
-                  ) : (
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <select
-                        value={selectedGroups[student.id] || ''}
-                        onChange={(e) =>
-                          setSelectedGroups({ ...selectedGroups, [student.id]: e.target.value })
-                        }
-                      >
-                        <option value="">-- Группа --</option>
-                        {groups.map((g) => (
-                          <option key={g.id} value={g.id}>
-                            {g.name}
-                          </option>
-                        ))}
-                      </select>
-                      <button onClick={() => handleAssignGroup(student.id)}>OK</button>
-                    </div>
-                  )}
-                </td>
-                <td>
-                  {student.profile ? (
-                    <small>
-                      {student.profile.bio} (
-                      <a href={student.profile.githubUrl} target="_blank" rel="noreferrer">
-                        GitHub
-                      </a>
-                      )
-                    </small>
-                  ) : (
-                    <button onClick={() => setActiveStudentForProfile(student)}>
-                      + Профиль
-                    </button>
-                  )}
-                </td>
-                <td>
-                  <button onClick={() => handleDelete(student.id)}>Удалить</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <h2>Список студентов</h2>
+        <StudentForm />
+      </div>
+
+      <div style={{ height: 600, width: '100%', backgroundColor: '#fff' }}>
+        <DataGrid
+          rows={students}
+          columns={columns}
+          getRowId={(row) => row.id}
+          disableRowSelectionOnClick
+        />
+      </div>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        message="Студент успешно удален"
+      />
 
       {activeStudentForProfile && (
         <ProfileForm
