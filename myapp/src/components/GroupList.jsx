@@ -22,7 +22,6 @@ function GroupList() {
     onSuccess: () => {
       setOpenSnackbar(true);
       queryClient.invalidateQueries({ queryKey: ['groups'] });
-      // Инвалидируем студентов, так как у них могла сброситься группа
       queryClient.invalidateQueries({ queryKey: ['students'] });
     },
   });

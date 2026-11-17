@@ -4,7 +4,6 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import api from '../api';
 
 function ProfileForm({ student, onCancel }) {
-  // Компонент монтируется только когда student передан, поэтому Dialog сразу открыт
   const [bio, setBio] = useState('');
   const [githubUrl, setGithubUrl] = useState('');
   const queryClient = useQueryClient();
@@ -13,7 +12,7 @@ function ProfileForm({ student, onCancel }) {
     mutationFn: (profileData) => api.post(`/api/profiles/student/${student.id}`, profileData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
-      onCancel(); // Закрываем модальное окно через родительский компонент
+      onCancel();
     },
   });
 

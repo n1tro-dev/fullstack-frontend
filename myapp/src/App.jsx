@@ -22,7 +22,6 @@ function MainContent() {
   return (
     <BrowserRouter>
       <AppBar position="static" sx={{ mb: 4 }}>
-        {/* Заголовок вынесен из Toolbar для отображения на отдельной строке */}
         <Typography variant="h6" sx={{ flexGrow: 1, pt: 2, px: 3 }}>
           Университет
         </Typography>
@@ -45,10 +44,8 @@ function MainContent() {
 }
 
 export default function App() {
-  // Читаем системные настройки (темная или светлая тема)
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
-  // Создаем объект темы, который пересчитывается при изменении настроек браузера/ОС
   const theme = useMemo(
     () =>
       createTheme({
